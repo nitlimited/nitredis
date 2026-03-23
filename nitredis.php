@@ -2,9 +2,9 @@
 /**
  * Plugin Name: NitRedis
  * Plugin URI:  https://nitlimited.com/nitredis
- * Description: High-performance Redis object caching for WordPress — powered by NIT Limited.
- * Version:     1.0.2
- * Author:      NIT Limited
+ * Description: High-performance Redis object caching for WordPress — powered by Nusite IT Consulting Limited.
+ * Version:     1.0.3
+ * Author:      Nusite IT Consulting Limited
  * Author URI:  https://nitlimited.com
  * License:     GPL-2.0+
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -16,7 +16,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NITREDIS_VERSION',   '1.0.2' );
+define( 'NITREDIS_VERSION',   '1.0.3' );
 define( 'NITREDIS_FILE',      __FILE__ );
 define( 'NITREDIS_DIR',       plugin_dir_path( __FILE__ ) );
 define( 'NITREDIS_URL',       plugin_dir_url( __FILE__ ) );
