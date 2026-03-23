@@ -134,8 +134,8 @@ class NitRedis_Updater {
         $info->name          = 'NitRedis';
         $info->slug          = $this->get_slug();
         $info->version       = $latest_version;
-        $info->author        = '<a href="https://nusite.co.uk">Nusite I.T Consulting Limited</a>';
-        $info->homepage      = 'https://nusite.co.uk/nitredis';
+        $info->author        = '<a href="https://nitlimited.com">NIT Limited</a>';
+        $info->homepage      = 'https://nitlimited.com/nitredis';
         $info->requires      = '5.6';
         $info->requires_php  = '7.4';
         $info->download_link = self::get_download_url( $release );
@@ -143,7 +143,7 @@ class NitRedis_Updater {
             ? date( 'Y-m-d', strtotime( $release['published_at'] ) )
             : '';
         $info->sections      = [
-            'description' => 'High-performance Redis object caching for WordPress, by Nusite I.T Consulting Limited.',
+            'description' => 'High-performance Redis object caching for WordPress, by NIT Limited.',
             'changelog'   => $this->format_changelog( $release['body'] ?? '' ),
         ];
 

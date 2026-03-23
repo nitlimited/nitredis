@@ -1,7 +1,7 @@
 <?php defined( 'ABSPATH' ) || exit; ?>
 <div class="nitredis-header">
     <div class="nitredis-header__logo">
-        <img src="<?php echo esc_url( NITREDIS_URL . 'assets/images/nusite-logo.png' ); ?>" alt="Nusite I.T Consulting" class="nitredis-logo">
+        <img src="<?php echo esc_url( NITREDIS_URL . 'assets/images/nusite-logo.png' ); ?>" alt="NIT Limited" class="nitredis-logo">
     </div>
     <div class="nitredis-header__info">
         <h1 class="nitredis-title">NitRedis <span class="nitredis-version">v<?php echo NITREDIS_VERSION; ?></span></h1>

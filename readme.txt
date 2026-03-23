@@ -4,11 +4,11 @@ Tags: redis, cache, object-cache, performance, speed
 Requires at least: 5.6
 Tested up to: 6.5
 Requires PHP: 7.4
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-High-performance Redis object caching for WordPress, developed by Nusite I.T Consulting Limited.
+High-performance Redis object caching for WordPress, developed by NIT Limited.
 
 == Description ==
 
@@ -51,5 +51,5 @@ wp-config.php constants.
 
 == Changelog ==
 
-= 1.0.0 =
-* Initial release by Nusite I.T Consulting Limited.
+= 1.0.2 =
+* Initial release by NIT Limited.

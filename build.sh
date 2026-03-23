@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
 #  NitRedis — Build & Release Script
-#  Nusite I.T Consulting Limited
+#  NIT Limited
 #
 #  Usage:
 #    ./build.sh                  # patch bump  1.0.0 → 1.0.1

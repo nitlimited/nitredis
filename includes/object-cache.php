@@ -3,7 +3,7 @@
  * NitRedis Object Cache Drop-in
  *
  * Copied to wp-content/object-cache.php by the NitRedis plugin.
- * Nusite I.T Consulting Limited — https://nusite.co.uk
+ * NIT Limited — https://nitlimited.com
  *
  * IMPORTANT: This file defines ALL required WordPress object cache functions
  * unconditionally. If the NitRedis plugin is missing, renamed, or Redis is
@@ -14,7 +14,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'NITREDIS_DROP_IN_VERSION', '1.0.1' );
+define( 'NITREDIS_DROP_IN_VERSION', '1.0.2' );
 
 // ── Bootstrap: try to load the plugin classes ─────────────────────────────────
 // Searches common plugin folder names so a rename doesn't cause a fatal.
