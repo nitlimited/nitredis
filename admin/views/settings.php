@@ -132,15 +132,42 @@ jQuery(function($){
     $('#nitredis-settings-form').on('submit', function(e){
         e.preventDefault();
         var $btn = $('#nitredis-save-btn').prop('disabled',true).text('Saving…');
-        var data = $(this).serializeArray().reduce(function(o,f){ o[f.name]=f.value; return o; }, {});
-        if (!$('input[name=ssl]').is(':checked')) data.ssl = '';
 
-        $.post(NitRedis.ajax_url, { action:'nitredis_save_settings', nonce:NitRedis.nonce, settings:data }, function(res){
-            var $m = $('#nitredis-save-msg');
-            $m.text(res.data.message).removeClass('nitredis-msg--ok nitredis-msg--err')
-              .addClass(res.success ? 'nitredis-msg--ok':'nitredis-msg--err').show();
-            setTimeout(function(){ $m.fadeOut(); }, 4000);
-            $btn.prop('disabled',false).text('Save Settings');
+        // Collect all named fields into a flat object
+        var formData = {};
+        $(this).find('[name]').each(function(){
+            var el = $(this);
+            var name = el.attr('name');
+            if (el.attr('type') === 'checkbox') {
+                formData[name] = el.is(':checked') ? '1' : '';
+            } else {
+                formData[name] = el.val();
+            }
+        });
+
+        // Send each settings key as settings[key] so PHP sees $_POST['settings'] as an array
+        var payload = { action: 'nitredis_save_settings', nonce: NitRedis.nonce };
+        $.each(formData, function(k, v){ payload['settings[' + k + ']'] = v; });
+
+        $.ajax({
+            url: NitRedis.ajax_url,
+            method: 'POST',
+            data: payload,
+            success: function(res) {
+                var $m = $('#nitredis-save-msg');
+                var msg = (res && res.data && res.data.message) ? res.data.message : (res.success ? 'Settings saved.' : 'Failed to save settings.');
+                $m.text(msg).removeClass('nitredis-msg--ok nitredis-msg--err')
+                  .addClass(res.success ? 'nitredis-msg--ok' : 'nitredis-msg--err').show();
+                setTimeout(function(){ $m.fadeOut(); }, 5000);
+                $btn.prop('disabled', false).text('Save Settings');
+            },
+            error: function(xhr) {
+                var $m = $('#nitredis-save-msg');
+                $m.text('Request failed (HTTP ' + xhr.status + '). Check browser console.')
+                  .removeClass('nitredis-msg--ok').addClass('nitredis-msg--err').show();
+                $btn.prop('disabled', false).text('Save Settings');
+                console.error('NitRedis save error:', xhr.responseText);
+            }
         });
     });
 

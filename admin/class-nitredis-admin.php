@@ -86,18 +86,39 @@ class NitRedis_Admin {
 
     public static function ajax_save_settings() {
         self::check_nonce();
-        $data   = wp_unslash( $_POST['settings'] ?? [] );
-        $saved  = NitRedis_Settings::save( $data );
+
+        // $_POST['settings'] is populated as an array when JS sends settings[key]=value.
+        // Fall back to full $_POST minus the housekeeping keys if the sub-array is missing.
+        if ( isset( $_POST['settings'] ) && is_array( $_POST['settings'] ) ) {
+            $data = wp_unslash( $_POST['settings'] );
+        } else {
+            $exclude = [ 'action', 'nonce', '_wpnonce' ];
+            $data    = array_diff_key( wp_unslash( $_POST ), array_flip( $exclude ) );
+        }
+
+        if ( empty( $data ) ) {
+            wp_send_json_error( [ 'message' => 'No settings data received. Please try again.' ] );
+            return;
+        }
+
+        try {
+            $saved = NitRedis_Settings::save( $data );
+        } catch ( Exception $e ) {
+            wp_send_json_error( [ 'message' => 'Save error: ' . $e->getMessage() ] );
+            return;
+        }
+
         // Re-test connection with new settings.
         NitRedis_Connection::disconnect();
         $ping = NitRedis_Cache::ping();
+
         if ( $saved ) {
             wp_send_json_success( [
-                'message'   => 'Settings saved.',
+                'message'   => 'Settings saved.' . ( $ping ? ' Redis connection verified.' : ' Warning: could not connect to Redis with these settings.' ),
                 'connected' => $ping,
             ] );
         } else {
-            wp_send_json_error( [ 'message' => 'Failed to save settings.' ] );
+            wp_send_json_error( [ 'message' => 'Failed to write settings to the database. Check filesystem permissions.' ] );
         }
     }
 
