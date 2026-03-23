@@ -105,6 +105,36 @@ $s = NitRedis_Settings::get();
             </div>
 
             <div class="nitredis-form-section">
+                <h3>Automatic Updates</h3>
+                <p class="nitredis-desc" style="margin-bottom:14px;">NitRedis checks your GitHub repository for new releases and notifies WordPress when an update is available. Set your repository once and all sites will update automatically.</p>
+                <div class="nitredis-form-row">
+                    <label>GitHub Repository
+                        <span class="nitredis-hint">owner/repo</span>
+                    </label>
+                    <div>
+                        <input type="text" name="github_repo"
+                               value="<?php echo esc_attr($s['github_repo'] ?? 'nitlimited/nitredis'); ?>"
+                               placeholder="nitlimited/nitredis" style="margin-bottom:8px;">
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            <button type="button" class="nitredis-btn nitredis-btn--sm nitredis-btn--secondary" id="nitredis-test-github-btn">
+                                Test Connection
+                            </button>
+                            <span id="nitredis-github-test-msg" class="nitredis-msg" style="display:none;"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="nitredis-form-row">
+                    <label>GitHub Token
+                        <span class="nitredis-hint">Private repos only</span>
+                    </label>
+                    <input type="password" name="github_token"
+                           value="<?php echo esc_attr($s['github_token'] ?? ''); ?>"
+                           autocomplete="new-password"
+                           placeholder="ghp_xxxx  (leave blank for public repos)">
+                </div>
+            </div>
+
+            <div class="nitredis-form-section">
                 <h3>Cache Groups</h3>
                 <div class="nitredis-form-row nitredis-form-row--tall">
                     <label>Global Groups<br><span class="nitredis-hint">One per line</span></label>
@@ -168,6 +198,32 @@ jQuery(function($){
                 $btn.prop('disabled', false).text('Save Settings');
                 console.error('NitRedis save error:', xhr.responseText);
             }
+        });
+    });
+
+    // ── Test GitHub repo connection ───────────────────────────────────────
+    $('#nitredis-test-github-btn').on('click', function(){
+        var repo  = $('input[name=github_repo]').val().trim();
+        var token = $('input[name=github_token]').val().trim();
+        var $msg  = $('#nitredis-github-test-msg');
+        var $btn  = $(this).prop('disabled', true).text('Testing…');
+
+        $msg.hide();
+
+        $.post(NitRedis.ajax_url, {
+            action: 'nitredis_test_github',
+            nonce:  NitRedis.nonce,
+            repo:   repo,
+            token:  token
+        }, function(res) {
+            $msg.text(res.data.message)
+                .removeClass('nitredis-msg--ok nitredis-msg--err')
+                .addClass(res.success ? 'nitredis-msg--ok' : 'nitredis-msg--err')
+                .show();
+            $btn.prop('disabled', false).text('Test Connection');
+        }).fail(function() {
+            $msg.text('Request failed.').addClass('nitredis-msg--err').show();
+            $btn.prop('disabled', false).text('Test Connection');
         });
     });
 

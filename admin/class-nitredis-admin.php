@@ -20,6 +20,7 @@ class NitRedis_Admin {
         add_action( 'wp_ajax_nitredis_remove_dropin',  [ __CLASS__, 'ajax_remove_dropin' ] );
         add_action( 'wp_ajax_nitredis_get_metrics',    [ __CLASS__, 'ajax_get_metrics' ] );
         add_action( 'wp_ajax_nitredis_scan_config',    [ __CLASS__, 'ajax_scan_config' ] );
+        add_action( 'wp_ajax_nitredis_test_github',     [ __CLASS__, 'ajax_test_github' ] );
         add_filter( 'plugin_action_links_' . plugin_basename( NITREDIS_FILE ), [ __CLASS__, 'action_links' ] );
     }
 
@@ -153,6 +154,52 @@ class NitRedis_Admin {
         self::check_nonce();
         $result = NitRedis_Scanner::scan();
         wp_send_json_success( $result );
+    }
+
+    public static function ajax_test_github() {
+        self::check_nonce();
+
+        $repo  = sanitize_text_field( $_POST['repo']  ?? '' );
+        $token = sanitize_text_field( $_POST['token'] ?? '' );
+
+        if ( empty( $repo ) || ! preg_match( '/^[\w.-]+\/[\w.-]+$/', $repo ) ) {
+            wp_send_json_error( [ 'message' => 'Invalid repository format. Use: owner/repo' ] );
+            return;
+        }
+
+        $args = [
+            'timeout'    => 8,
+            'user-agent' => 'NitRedis/' . NITREDIS_VERSION,
+            'headers'    => [ 'Accept' => 'application/vnd.github+json' ],
+        ];
+        if ( $token ) {
+            $args['headers']['Authorization'] = 'Bearer ' . $token;
+        }
+
+        $response = wp_remote_get( "https://api.github.com/repos/{$repo}/releases/latest", $args );
+
+        if ( is_wp_error( $response ) ) {
+            wp_send_json_error( [ 'message' => 'Request failed: ' . $response->get_error_message() ] );
+            return;
+        }
+
+        $code = wp_remote_retrieve_response_code( $response );
+        $body = json_decode( wp_remote_retrieve_body( $response ), true );
+
+        if ( $code === 200 && ! empty( $body['tag_name'] ) ) {
+            wp_send_json_success( [
+                'message' => 'Connected! Latest release: ' . esc_html( $body['tag_name'] )
+                           . ( ! empty( $body['published_at'] ) ? ' (' . date( 'M j, Y', strtotime( $body['published_at'] ) ) . ')' : '' ),
+            ] );
+        } elseif ( $code === 404 ) {
+            wp_send_json_error( [ 'message' => 'Repository not found. Check the slug and make sure it is public (or provide a token for private repos).' ] );
+        } elseif ( $code === 401 || $code === 403 ) {
+            wp_send_json_error( [ 'message' => 'Authentication failed. Check your GitHub token.' ] );
+        } elseif ( $code === 200 ) {
+            wp_send_json_success( [ 'message' => 'Repository found but no releases published yet.' ] );
+        } else {
+            wp_send_json_error( [ 'message' => "GitHub API returned HTTP {$code}." ] );
+        }
     }
 
     // ── Plugin action links ───────────────────────────────────────────────────

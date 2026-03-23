@@ -193,9 +193,34 @@ if [[ "$NO_BUMP" == false ]]; then
             git push "$REMOTE" "$BRANCH"
             git push "$REMOTE" "$TAG_NAME"
             success "Pushed ${BRANCH} and ${TAG_NAME} to ${REMOTE}"
+
+            # ── Create GitHub Release + attach zip ────────────────────────────
+            # Requires GitHub CLI (https://cli.github.com) — `gh auth login` first.
             echo ""
-            info "GitHub will now serve this tag as the latest release."
-            info "Live sites running NitRedis will see the update within 12 hours."
+            if command -v gh &> /dev/null; then
+                read -rp "  Create GitHub Release and attach zip via gh CLI? (y/N) " GH_CONFIRM
+                if [[ "$GH_CONFIRM" =~ ^[Yy]$ ]]; then
+                    # Extract release notes from readme.txt changelog section if present
+                    RELEASE_NOTES=""
+                    if [[ -f "$README_FILE" ]]; then
+                        RELEASE_NOTES=$(awk "/^= ${NEW_VERSION} =/,/^= [0-9]/" "$README_FILE"                             | grep -v "^= " | sed '/^$/d' | head -20 | tr '
+' ' ')
+                    fi
+                    [[ -z "$RELEASE_NOTES" ]] && RELEASE_NOTES="Release ${TAG_NAME}"
+
+                    gh release create "$TAG_NAME"                         "$ZIP_PATH"                         --title "NitRedis ${TAG_NAME}"                         --notes "$RELEASE_NOTES"
+
+                    success "GitHub Release created with zip attached"
+                    echo ""
+                    info "Live sites will see the update within 12 hours."
+                else
+                    warn "Skipped GitHub Release creation."
+                    _print_manual_release_instructions
+                fi
+            else
+                warn "GitHub CLI (gh) not found — create the release manually:"
+                _print_manual_release_instructions
+            fi
         else
             warn "Skipped push. Run manually:"
             echo "    git push origin \$(git rev-parse --abbrev-ref HEAD)"
@@ -206,6 +231,21 @@ if [[ "$NO_BUMP" == false ]]; then
         warn "Version files have been updated; commit them manually."
     fi
 fi
+
+# ── Helper: print manual release instructions ────────────────────────────────
+_print_manual_release_instructions() {
+    echo ""
+    echo "  To publish the release manually:"
+    echo "  1. Go to https://github.com/\$(git remote get-url origin | sed 's/.*github.com[:/]//' | sed 's/.git$//')/releases/new"
+    echo "  2. Select tag: ${TAG_NAME:-vX.Y.Z}"
+    echo "  3. Set title: NitRedis ${TAG_NAME:-vX.Y.Z}"
+    echo "  4. Attach the zip: ${ZIP_PATH}"
+    echo "  5. Publish the release"
+    echo ""
+    warn "IMPORTANT: Attach the zip as a release asset — do NOT rely on the"
+    warn "auto-generated source zip. WordPress needs the nitredis/ folder at"
+    warn "the zip root or the plugin installer will break."
+}
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 echo ""

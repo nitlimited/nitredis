@@ -38,6 +38,8 @@ class NitRedis_Settings {
                                     'userlogins', 'usermeta', 'user_meta', 'userslugs' ],
             'ignored_groups'   => [ 'counts', 'plugins' ],
             'max_ttl'          => 0,  // 0 = no limit.
+            'github_repo'      => 'nitlimited/nitredis',
+            'github_token'     => '',   // only needed for private repos
         ];
     }
 
@@ -72,6 +74,8 @@ class NitRedis_Settings {
         $clean['path']         = sanitize_text_field( $data['path']     ?? '' );
         $clean['ssl']          = ! empty( $data['ssl'] );
         $clean['max_ttl']      = (int) ( $data['max_ttl']               ?? 0 );
+        $clean['github_repo']  = sanitize_text_field( $data['github_repo']  ?? 'nitlimited/nitredis' );
+        $clean['github_token'] = sanitize_text_field( $data['github_token'] ?? '' );
 
         $clean['global_groups']  = array_map( 'sanitize_text_field',
             array_filter( explode( "\n", str_replace( "\r", '', $data['global_groups_raw'] ?? '' ) ) ) );
