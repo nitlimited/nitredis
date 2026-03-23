@@ -78,7 +78,26 @@ class NitRedis_Settings {
         $clean['ignored_groups'] = array_map( 'sanitize_text_field',
             array_filter( explode( "\n", str_replace( "\r", '', $data['ignored_groups_raw'] ?? '' ) ) ) );
 
-        return update_option( self::OPTION_KEY, $clean );
+        // update_option() returns false both on DB error AND when the value is
+        // unchanged. We treat "no change needed" as a success by checking whether
+        // the option already exists with the same value.
+        $updated = update_option( self::OPTION_KEY, $clean );
+
+        if ( $updated ) {
+            return true; // genuinely updated
+        }
+
+        // Check if the current stored value already matches what we tried to save.
+        $existing = get_option( self::OPTION_KEY );
+        if ( $existing !== false ) {
+            // Option exists — update_option returned false meaning "no change needed".
+            // Force-write with delete + add to ensure it's truly persisted.
+            delete_option( self::OPTION_KEY );
+            return add_option( self::OPTION_KEY, $clean, '', 'yes' );
+        }
+
+        // Option didn't exist yet — create it fresh.
+        return add_option( self::OPTION_KEY, $clean, '', 'yes' );
     }
 
     /**
